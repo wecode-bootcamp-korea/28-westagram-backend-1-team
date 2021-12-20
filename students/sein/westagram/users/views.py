@@ -13,9 +13,6 @@ class SignUpView(View):
             email    = data['email']
             password = data['password']
 
-            if User.objects.filter(email = data['email']).exists():
-                return JsonResponse({'message' : 'ALREADY_EXIST'}, status = 400)
-
             email_regex    = '[a-zA-Z0-9.-_+]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.]+'
             password_regex = '^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'
 
@@ -25,10 +22,9 @@ class SignUpView(View):
             if not re.match(password_regex, data['password']):
                 return JsonResponse({'message' : 'INVALID_PASSWORD'}, status = 400)
        
-        except KeyError:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)    
+            if User.objects.filter(email = data['email']).exists():
+                return JsonResponse({'message' : 'ALREADY_EXIST'}, status = 400)
 
-        else:
             User.objects.create(
                 email         = data['email'],
                 password      = data['password'],
@@ -36,5 +32,5 @@ class SignUpView(View):
                 mobile_number = data['mobile_number']
                 )
             return JsonResponse({'message' : 'SUCCESS'}, status = 201)
-
-            
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
