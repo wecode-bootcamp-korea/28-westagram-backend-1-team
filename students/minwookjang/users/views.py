@@ -8,15 +8,15 @@ from django.views   import View
 from users.models   import User
 
 def validate_email(email):
-    pattern = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    REGEX_EMAIL = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     
-    if not re.match(pattern,email):
+    if not re.match(REGEX_EMAIL,email):
         raise ValidationError('EMAIL_VALIDATION')
 
 def validate_password(password):
-    pattern = '^[0-9a-z~!@#$%^&*()_+A-Z]*.{8,}$'
+    REGEX_PASSWORD = '^[0-9a-z~!@#$%^&*()_+A-Z]*.{8,}$'
     
-    if not re.match(pattern,password):
+    if not re.match(REGEX_PASSWORD,password):
         raise ValidationError('PASSWORD_VALIDATION')
 
 class SignupView(View):
