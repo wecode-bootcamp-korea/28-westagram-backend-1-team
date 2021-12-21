@@ -19,16 +19,6 @@ def validate_password(password):
     if not re.match(REGEX_PASSWORD,password):
         raise ValidationError('PASSWORD_VALIDATION')
 
-def login_email_check(email):
-
-    if not User.objects.filter(email = email):
-        raise ValidationError('INVALID_USER')
-
-def login_password_check(email,password):
-
-    if not User.objects.filter(email = email, password = password):
-        raise ValidationError('INVALID_USER')
-
 class SignupView(View):
     def post(self,request):
         data = json.loads(request.body)
@@ -60,8 +50,8 @@ class LoginView(View):
         data = json.loads(request.body)
 
         try:
-            login_email_check(data['email'])
-            login_password_check(data['email'],data['password'])
+            if not User.objects.filter(email = data['email'], password = data['password']):
+                raise ValidationError('INVALID_USER')
             
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
