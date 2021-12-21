@@ -1,29 +1,24 @@
 import re
-from users.models     import User
 
-def check_empty(email_or_pw):
-    if email_or_pw == '':
-        return True
-    else:
-        return False
+from django.core.exceptions import ValidationError
+from users.models           import User
 
-def validate_email(email_data):
-    if check_empty(email_data) == True:
-        return 'empty'
+REGEX_EMAIL    = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+REGEX_PASSWORD = '^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'
+
+def validate_email(value) :
+    if value == '':
+        raise ValidationError('EMPTY_EMAIL')
     
-    if User.objects.filter(email=email_data).exists():
-        return 'duplicate_email'
-    
-    if re.match(r"^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$", email_data) == None:
-        return 'no_match'
-
-    return True
-
-def validate_pw(pw_data):
-    if check_empty(pw_data) == True:
-        return 'empty'
+    if User.objects.filter(email=value).exists():
+        raise ValidationError('USER_ALREADY_EXISTS')
         
-    if re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*#?&]).{8,}$", pw_data) == None:
-        return 'no_match'
+    if not re.match(REGEX_EMAIL, value):
+        raise ValidationError('INVALID_EMAIL_ADDRESS')
 
-    return True
+def validate_password(value) :
+    if value == '':
+        raise ValidationError('EMPTY_PASSWORD')
+        
+    if not re.match(REGEX_PASSWORD, value):
+        raise ValidationError('INVALID_PASSWORD')
