@@ -38,7 +38,7 @@ class SignupView(View):
                 return JsonResponse({'message' : 'EMAIL_DUPLICATE_VALUES'}, status = 400)
 
             validate_email(data['email'])
-            validate_password(data['email'],data['password'])
+            validate_password(data['password'])
 
             User.objects.create(
                 name          = data['name'],
