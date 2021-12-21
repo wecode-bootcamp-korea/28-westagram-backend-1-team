@@ -18,7 +18,7 @@ class SignupView(View):
             phone_number    = data['phone_number']
             is_professional = data['is_professional']
 
-            if not is_email_valid(email):
+            if not is_email_valid(email, password):
                 raise ValidationError('INVALID_EMAIL')
             
             if not is_password_valid(password):
@@ -51,10 +51,7 @@ class LoginView(View):
             email    = data['email']
             password = data['password']
 
-            if not User.objects.filter(email=email).exists():
-                raise ValidationError('INVALID_USER')
-            
-            if not User.objects.filter(password=password).exists():
+            if not User.objects.filter(email=email, password=password).exists():
                 raise ValidationError('INVALID_USER')
 
             return JsonResponse({'message' : 'SUCCESS'}, status=200)
