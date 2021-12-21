@@ -42,3 +42,25 @@ class SignupView(View):
 
         except ValidationError as e:
             return JsonResponse({"message": e.message}, status=400)
+
+class LoginView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        
+        try:
+            email    = data['email']
+            password = data['password']
+
+            if not User.objects.filter(email=email).exists():
+                raise ValidationError('INVALID_USER')
+            
+            if not User.objects.filter(password=password).exists():
+                raise ValidationError('INVALID_USER')
+
+            return JsonResponse({'message' : 'SUCCESS'}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except ValidationError as e:
+            return JsonResponse({"message": e.message}, status=401)
