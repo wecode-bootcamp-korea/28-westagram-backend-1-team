@@ -1,43 +1,42 @@
 import json
-import re
 
 # from django.shortcuts import render
-from django.http import JsonResponse
-from django.views import View
+from django.http            import JsonResponse
+from django.views           import View
+from django.core.exceptions import ValidationError
 
-from .models import User
-# Create your views here.
-'''
-username : "이아영"
-email : "dkdud2408@gmail.com"
-password : "1234"
-phone_number : 01035460692
-is_professional : False
+from .models      import User
+from .validations import is_email_valid, is_password_valid
 
----------------
-'''
 class SignupView(View):
     def post(self, request):
         data = json.loads(request.body)
-        
         try:
-            email    = data['email']
-            password = data['password']
+            username        = data['username']
+            email           = data['email']
+            password        = data['password']
+            phone_number    = data['phone_number']
+            is_professional = data['is_professional']
 
-            if re.match("/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;", email) == None:
-                return JsonResponse({"message": "Validation_ERROR"}, status=400)
-            elif re.match("/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;", password) == None:
-                return JsonResponse({"message": "Validation_ERROR"}, status=400)
+            if is_email_valid(email) == None:
+                raise ValidationError('INVALID_EMAIL')
+            elif is_password_valid(password) == None:
+                raise ValidationError('INVALID_PASSWORD')
+            elif User.objects.filter(email=email).exists():
+                raise ValidationError('DUPLICATED_EMAIL')
             else:
-                signup = User.objects.create(
-                    username        = data['username'],
-                    email           = data['email'],
-                    password        = data['password'],
-                    phone_number    = data['phone_number'],
-                    is_professional = data['is_professional']
+                User.objects.create(
+                    username        = username,
+                    email           = email,
+                    password        = password,
+                    phone_number    = phone_number,
+                    is_professional = is_professional
                 )
 
             return JsonResponse({'message' : 'created'}, status=201)
 
-        except :
+        except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except ValidationError as e:
+            return JsonResponse({"message": e.message}, status=400)
