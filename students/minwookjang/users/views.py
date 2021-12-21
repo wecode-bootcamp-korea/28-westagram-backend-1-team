@@ -19,6 +19,16 @@ def validate_password(password):
     if not re.match(REGEX_PASSWORD,password):
         raise ValidationError('PASSWORD_VALIDATION')
 
+def login_email_check(email):
+
+    if not User.objects.filter(email = email):
+        raise ValidationError('INVALID_USER')
+
+def login_password_check(email,password):
+
+    if not User.objects.filter(email = email, password = password):
+        raise ValidationError('INVALID_USER')
+
 class SignupView(View):
     def post(self,request):
         data = json.loads(request.body)
@@ -28,7 +38,7 @@ class SignupView(View):
                 return JsonResponse({'message' : 'EMAIL_DUPLICATE_VALUES'}, status = 400)
 
             validate_email(data['email'])
-            validate_password(data['password'])
+            validate_password(data['email'],data['password'])
 
             User.objects.create(
                 name          = data['name'],
@@ -44,3 +54,19 @@ class SignupView(View):
 
         except ValidationError as e:
             return JsonResponse({'message':e.message}, status=400)
+
+class LoginView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            login_email_check(data['email'])
+            login_password_check(data['email'],data['password'])
+            
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+
+        except ValidationError as e:
+            return JsonResponse({'message':e.message}, status=401)
+    
+        return JsonResponse({'message': 'SUCCESS'}, status=200)
