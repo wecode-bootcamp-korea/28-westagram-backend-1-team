@@ -18,7 +18,7 @@ class SignupView(View):
             phone_number    = data['phone_number']
             is_professional = data['is_professional']
 
-            if not is_email_valid(email, password):
+            if not is_email_valid(email):
                 raise ValidationError('INVALID_EMAIL')
             
             if not is_password_valid(password):
