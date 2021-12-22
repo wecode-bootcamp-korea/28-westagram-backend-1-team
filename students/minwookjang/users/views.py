@@ -1,5 +1,6 @@
 import json
 import re
+import bcrypt
 
 from django.core.exceptions import ValidationError
 from django.shortcuts   import render
@@ -30,10 +31,12 @@ class SignupView(View):
             validate_email(data['email'])
             validate_password(data['password'])
 
+            hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+
             User.objects.create(
                 name          = data['name'],
                 email         = data['email'],
-                password      = data['password'],
+                password      = hashed_password,
                 phone_number  = data['phone_number'],
                 date_of_birth = data['date_of_birth']
             )
