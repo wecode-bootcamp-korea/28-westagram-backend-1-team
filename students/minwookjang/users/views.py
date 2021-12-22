@@ -36,7 +36,7 @@ class SignupView(View):
             User.objects.create(
                 name          = data['name'],
                 email         = data['email'],
-                password      = hashed_password,
+                password      = hashed_password.decode('utf-8'),
                 phone_number  = data['phone_number'],
                 date_of_birth = data['date_of_birth']
             )
@@ -53,9 +53,12 @@ class LoginView(View):
         data = json.loads(request.body)
 
         try:
-            if not User.objects.filter(email = data['email'], password = data['password']):
+            if not User.objects.filter(email = data['email']):
                 raise ValidationError('INVALID_USER')
             
+            if not bcrypt.checkpw(data['password'].encode('utf-8'), User.objects.filter(email = data['email']).get().password.encode('utf-8')):
+                raise ValidationError('INVALID_USER')
+
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
 
