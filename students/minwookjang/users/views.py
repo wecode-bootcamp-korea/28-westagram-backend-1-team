@@ -1,5 +1,6 @@
 import json
 import re
+import bcrypt
 
 from django.core.exceptions import ValidationError
 from django.shortcuts   import render
@@ -30,10 +31,12 @@ class SignupView(View):
             validate_email(data['email'])
             validate_password(data['password'])
 
+            hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+
             User.objects.create(
                 name          = data['name'],
                 email         = data['email'],
-                password      = data['password'],
+                password      = hashed_password.decode('utf-8'),
                 phone_number  = data['phone_number'],
                 date_of_birth = data['date_of_birth']
             )
@@ -50,9 +53,14 @@ class LoginView(View):
         data = json.loads(request.body)
 
         try:
-            if not User.objects.filter(email = data['email'], password = data['password']):
+            if not User.objects.filter(email = data['email']).exists():
                 raise ValidationError('INVALID_USER')
             
+            user = User.objects.filter(email = data['email']).get()
+
+            if not bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+                raise ValidationError('INVALID_USER')
+
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
 
