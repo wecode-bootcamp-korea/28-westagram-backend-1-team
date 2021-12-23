@@ -53,10 +53,12 @@ class LoginView(View):
         data = json.loads(request.body)
 
         try:
-            if not User.objects.filter(email = data['email']):
+            if not User.objects.filter(email = data['email']).exists():
                 raise ValidationError('INVALID_USER')
             
-            if not bcrypt.checkpw(data['password'].encode('utf-8'), User.objects.filter(email = data['email']).get().password.encode('utf-8')):
+            user = User.objects.filter(email = data['email']).get()
+
+            if not bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                 raise ValidationError('INVALID_USER')
 
         except KeyError:
