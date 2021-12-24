@@ -52,9 +52,10 @@ class SignupView(View):
 
 class LoginView(View):
     def post(self, request):
-        data = json.loads(request.body)
-
+        
         try:
+            data = json.loads(request.body)
+
             if not User.objects.filter(email = data['email']).exists():
                 raise ValidationError('INVALID_USER')
             
@@ -66,6 +67,9 @@ class LoginView(View):
             access_token = jwt.encode({'user_id': user.id}, settings.SECRET_KEY, settings.ALGORITHM)
 
             return JsonResponse({"MESSAGE":"SUCCESS", "ACCESS_TOKEN": access_token}, status=200)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({"MESSAGE": "JSONDecodeError"}, status=404)
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
